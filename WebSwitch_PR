@@ -1,0 +1,104 @@
+/*
+ * https://42.oliver-bunte.de/files/2016/03/ESP8266_WlanAP.ino_.txt
+ */
+
+/* 
+ *  Ablauf der Bewässerung bei Pierre:
+ *  1) per Handy wird mit einem Knopf die Bewässerung gestartet
+ *  2) Arduino wird aktiviert und er schaltet Zone 1,2 und Zone3 für jeweisl 20Min
+ *  
+ */
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+const int ledPin = D1; // an LED is connected to NodeMCU pin D1 (ESP8266 GPIO5) via a 1K Ohm resistor
+
+bool ledState = false;
+IPAddress    apIP(192,168,4,1);
+
+/* This are the WiFi access point settings. */
+const char* ssid = "WLAN_TEST"; //replace this with your WiFi network name
+const char* password = "08150000"; //replace this with your WiFi network password
+
+// Define a web server at port 80 for HTTP
+ESP8266WebServer server(80);
+
+
+String html1 = "<!DOCTYPE html>\r\n<html>\r\n\
+<head>\r\n<meta content=\"text/html; charset=ISO-8859-1\" http-equiv=\"content-type\">\r\n\
+<title>WebSchalter</title>\r\n\
+<form action=\"";
+String html2 = "\"><br>\r\n\r\n\r\n<input value=\"ON/OFF-1\" style=\"";
+String html3 = " width:18em;height:15em; font-size: 16px;\" type=\"submit\">\
+</form>\r\n</head>\r\n<br><body>\r\n</body>\r\n</html>";
+
+int val = 1;                    //Startzustand ausgeschaltet
+String Temp = "";
+ 
+void Ereignis_SchalteON()       // Wird ausgefuehrt wenn "http://<ip address>/1.html" aufgerufen wurde
+{
+  val = 0;                      // Relais Aus
+  digitalWrite(0, val);         // GPIO0
+  Temp = html1 + String((val) ? "/1.html" : "/0.html");
+  Temp += html2 + String((val) ? "BACKGROUND-COLOR: DarkGray;" : "BACKGROUND-COLOR: Chartreuse;") + html3;
+  server.send(200, "text/html", Temp);
+}
+ 
+void Ereignis_SchalteOFF()  // Wird ausgefuehrt wenn "http://<ip address>//0.html" aufgerufen wurde
+{
+  val = 1;                      // Relais Ein
+  digitalWrite(0, val);         // GPIO0
+  Temp = html1 + String((val) ? "/1.html" : "/0.html");
+  Temp += html2 + String((val) ? "BACKGROUND-COLOR: DarkGray;" : "BACKGROUND-COLOR: Chartreuse;") + html3;
+  server.send(200, "text/html", Temp);
+}
+//----------------------------------------------------------------------------------------------------------- 
+  
+void Ereignis_Index()           // Wird ausgeuehrt wenn "http://<ip address>/" aufgerufen wurde
+{
+  Temp = html1 + String((val) ? "/1.html" : "/0.html");
+  Temp += html2 + String((val) ? "BACKGROUND-COLOR: DarkGray;" : "BACKGROUND-COLOR: Chartreuse;") + html3;
+  server.send(200, "text/html", Temp);  
+}
+
+void setup()
+{
+  pinMode(0, OUTPUT);           // GPIO0 als Ausgang konfigurieren
+  pinMode(2, INPUT_PULLUP);     // GPIO2 als Eingang mit Pullup konfigurieren
+  digitalWrite ( ledPin, 0 );
+  
+  delay(1000);
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println("Configuring access point...");
+
+  //set-up the custom IP address
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));   // subnet FF FF FF 00  
+  
+  /* You can remove the password parameter if you want the AP to be open. */
+  WiFi.softAP(ssid, password);
+
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+ 
+  //  Behandlung der Ereignisse anschliessen
+  server.on("/", Ereignis_Index);
+  server.on("/1.html", Ereignis_SchalteON);
+  server.on("/0.html", Ereignis_SchalteOFF);
+  
+   server.begin();               // Starte den Server
+  Serial.println("HTTP Server gestartet");
+}
+
+void loop()
+{
+  server.handleClient();
+  if (!digitalRead(2))          //Wenn Taster an GPIO2 betetigt wurde
+  {
+    val = !val;                 // Schaltzuschtand andern
+    digitalWrite(0, val);
+    while (!digitalRead(2))server.handleClient(); // Warten bis der Taster losgelassen wird.
+  }
+}
