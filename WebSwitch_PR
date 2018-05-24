@@ -6,14 +6,17 @@
  *  Ablauf der Bewässerung bei Pierre:
  *  1) per Handy wird mit einem Knopf die Bewässerung gestartet
  *  2) Arduino wird aktiviert und er schaltet Zone 1,2 und Zone3 für jeweisl 20Min
+ *
+ *  History
  *  14.05.2017 Testaufbau
  *  23.05.2017 Arduino Signaleingang LOW auf HIGH gesetzt
  *  24.05.2017 Probleme beim Upload in den ESP32 (entsteht durch Wechsel von Arduino nach ESP32)
+ *
  */
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-const int ledPin = D1; // an LED is connected to NodeMCU pin D1 (ESP8266 GPIO5) via a 1K Ohm resistor
+const int ledPin = D2; // Pin der NodeMCU (ESP8266 GPIO5) HIGH oder LOW setzen
 
 bool ledState = false;
 IPAddress    apIP(192,168,4,1);
@@ -37,6 +40,8 @@ String html3 = " width:18em;height:15em; font-size: 16px;\" type=\"submit\">\
 int val = 1;                    //Startzustand ausgeschaltet
 String Temp = "";
  
+//-----------------------------------------------------------------------------------------------------------
+
 void Ereignis_SchalteON()       // Wird ausgefuehrt wenn "http://<ip address>/1.html" aufgerufen wurde
 {
   val = 0;                      // Relais Aus
@@ -85,7 +90,7 @@ void setup()
   Serial.print("AP IP address: ");
   Serial.println(myIP);
  
-  //  Behandlung der Ereignisse anschliessen
+  //  Behandlung der Ereignisse...
   server.on("/", Ereignis_Index);
   server.on("/1.html", Ereignis_SchalteON);
   server.on("/0.html", Ereignis_SchalteOFF);
@@ -97,7 +102,7 @@ void setup()
 void loop()
 {
   server.handleClient();
-  if (!digitalRead(2))          //Wenn Taster an GPIO2 betetigt wurde
+  if (!digitalRead(2))          //Wenn Taster bedrückt, dann GPIO2 HIGH
   {
     val = !val;                 // Schaltzuschtand andern
     digitalWrite(0, val);
