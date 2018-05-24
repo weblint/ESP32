@@ -6,7 +6,9 @@
  *  Ablauf der Bewässerung bei Pierre:
  *  1) per Handy wird mit einem Knopf die Bewässerung gestartet
  *  2) Arduino wird aktiviert und er schaltet Zone 1,2 und Zone3 für jeweisl 20Min
- *  
+ *  14.05.2017 Testaufbau
+ *  23.05.2017 Arduino Signaleingang LOW auf HIGH gesetzt
+ *  24.05.2017 Probleme beim Upload in den ESP32 (entsteht durch Wechsel von Arduino nach ESP32)
  */
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
