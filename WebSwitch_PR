@@ -9,7 +9,7 @@
  *
  *  History
  *  14.05.2017 Testaufbau
- *  23.05.2017 Arduino Signaleingang LOW auf HIGH gesetzt
+ *  23.05.2017 Arduino Signaleingang LOW auf HIGH gesetzt: Test soweit ok! ESP muss auf der Schaltfläche eine andere Farbe zeigen...
  *  24.05.2017 Probleme beim Upload in den ESP32 (entsteht durch Wechsel von Arduino nach ESP32)
  *
  */
