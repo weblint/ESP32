@@ -16,7 +16,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-const int ledPin = D2; // Pin der NodeMCU (ESP8266 GPIO5) HIGH oder LOW setzen
+const int ledPin = 2; // Pin der NodeMCU (ESP8266 GPIO5) HIGH oder LOW setzen
 
 bool ledState = false;
 IPAddress    apIP(192,168,4,1);
